@@ -19,6 +19,14 @@ public partial class AppDbContext : DbContext
 
     public virtual DbSet<Addresses> Addresses { get; set; }
 
+    public virtual DbSet<Combo> Combos { get; set; }
+
+    public virtual DbSet<ComboProduct> ComboProduct { get; set; }
+
+    public virtual DbSet<Discounts> Discounts { get; set; }
+
+    public virtual DbSet<DiscountCategory> DiscountCategories{ get; set; }
+
     public virtual DbSet<Driver> Drivers { get; set; }
 
     public virtual DbSet<Order> Orders { get; set; }
