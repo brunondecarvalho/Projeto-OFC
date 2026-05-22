@@ -28,6 +28,7 @@ namespace EsfihariaAPI.Controllers
                     IdCategory = p.IdCategory,
                     IdStatus = p.IdStatus,
                     Name = p.Name,
+                    Description = p.Description,
                     Price = p.Price,
                     Image = p.Image
                 })
@@ -48,6 +49,7 @@ namespace EsfihariaAPI.Controllers
                     IdCategory = p.IdCategory,
                     IdStatus = p.IdStatus,
                     Name = p.Name,
+                    Description = p.Description ?? "",
                     Price = p.Price,
                     Image = p.Image
                 })
