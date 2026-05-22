@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace EsfihariaAPI.Models;
 
-public partial class Transaction
+public partial class Transactions
 {
     public int Id { get; set; }
 
@@ -11,21 +11,21 @@ public partial class Transaction
 
     public int IdOrder { get; set; }
 
-    public int IdPaymentMethod { get; set; }
-
     public int IdStatus { get; set; }
+
+    public string GatewayTransactionId { get; set; } = string.Empty;
+
+    public string PaymentMethod { get; set; } = string.Empty;
+
+    public int Installments { get; set; }
 
     public decimal TotalValue { get; set; }
 
-    public int IdGatewayTransaction { get; set; }
-
-    public int Payload { get; set; }
+    public string PayloadResponse { get; set; } = string.Empty;
 
     public DateTime CreationDate { get; set; }
 
     public DateTime? UpdateDate { get; set; }
-
-    public string? PayloadResponse { get; set; }
 
     public virtual Order IdOrderNavigation { get; set; } = null!;
 

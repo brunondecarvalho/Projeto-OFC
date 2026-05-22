@@ -15,5 +15,5 @@ public partial class Status
 
     public virtual ICollection<Product> Products { get; set; } = new List<Product>();
 
-    public virtual ICollection<Transaction> Transactions { get; set; } = new List<Transaction>();
+    public virtual ICollection<Transactions> Transactions { get; set; } = new List<Transactions>();
 }

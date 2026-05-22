@@ -43,7 +43,7 @@ public partial class AppDbContext : DbContext
 
     public virtual DbSet<Status> Statuses { get; set; }
 
-    public virtual DbSet<Transaction> Transactions { get; set; }
+    public virtual DbSet<Transactions> Transactions { get; set; }
 
     public virtual DbSet<User> Users { get; set; }
 
@@ -230,7 +230,7 @@ public partial class AppDbContext : DbContext
             entity.Property(e => e.Name).HasMaxLength(45);
         });
 
-        modelBuilder.Entity<Transaction>(entity =>
+        modelBuilder.Entity<Transactions>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PRIMARY");
 

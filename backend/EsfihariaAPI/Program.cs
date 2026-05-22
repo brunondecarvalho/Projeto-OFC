@@ -20,7 +20,11 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer(); // Essencial para mapear as rotas
 builder.Services.AddSwaggerGen();           // Gera a documentação OpenAPI
 
+builder.Services.AddCors(options => options.AddPolicy("AllowAll", p => p.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader()));
+
 var app = builder.Build();
+
+app.UseCors("AllowAll");
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
