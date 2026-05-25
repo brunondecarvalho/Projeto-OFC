@@ -22,6 +22,7 @@ namespace EsfihariaAPI.Controllers
         public async Task<ActionResult<IEnumerable<AddressListDTO>>> GetAll()
         {
             var addresses = await _db.Addresses
+                .AsNoTracking()
                 .Select(a => new AddressListDTO
                 {
                     Id = a.Id,
@@ -43,6 +44,7 @@ namespace EsfihariaAPI.Controllers
         public async Task<ActionResult<AddressListDTO>> GetById(int id)
         {
             var address = await _db.Addresses
+                .AsNoTracking()
                 .Where(a => a.Id == id)
                 .Select(a => new AddressListDTO
                 {
@@ -59,6 +61,32 @@ namespace EsfihariaAPI.Controllers
 
             if (address == null)
                 return NotFound("Endereço não encontrado.");
+
+            return Ok(address);
+        }
+
+        // GET: api/Addresses/5
+        [HttpGet("user/{idUser}")]
+        public async Task<ActionResult<AddressListDTO>> GetByIdUser(int idUser)
+        {
+            var address = await _db.Addresses
+                .AsNoTracking()
+                .Where(a => a.IdUser == idUser)
+                .Select(a => new AddressListDTO
+                {
+                    Id = a.Id,
+                    IdUser = a.IdUser,
+                    Address = a.Address,
+                    Number = a.Number,
+                    Neighborhood = a.Neighborhood,
+                    Cep = a.Cep,
+                    Complement = a.Complement,
+                    Landmark = a.Landmark
+                })
+                .ToListAsync();
+
+            if (address == null)
+                return NotFound("Usuário não encontrado.");
 
             return Ok(address);
         }
