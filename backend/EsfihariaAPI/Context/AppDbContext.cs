@@ -43,6 +43,8 @@ public partial class AppDbContext : DbContext
 
     public virtual DbSet<Status> Statuses { get; set; }
 
+    public virtual DbSet<StoreSettings> StoreSettings { get; set; }
+
     public virtual DbSet<Transactions> Transactions { get; set; }
 
     public virtual DbSet<User> Users { get; set; }
@@ -120,7 +122,7 @@ public partial class AppDbContext : DbContext
             entity.HasIndex(e => e.IdUser, "IdxIdUser");
 
             entity.Property(e => e.Date).HasColumnType("datetime");
-            entity.Property(e => e.DeliveryTime).HasPrecision(5, 2);
+            entity.Property(e => e.DeliveryTimeMinutes).HasPrecision(5, 2);
             entity.Property(e => e.DeliveryValue).HasPrecision(10, 2);
             entity.Property(e => e.DiscountValue).HasPrecision(10, 2);
             entity.Property(e => e.Note).HasMaxLength(100);

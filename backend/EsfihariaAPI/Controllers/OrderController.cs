@@ -58,7 +58,7 @@ namespace EsfihariaAPI.Controllers
                     DiscountValue = o.DiscountValue,
                     TotalValue = o.TotalValue,
                     Date = o.Date,
-                    DeliveryTime = o.DeliveryTime,
+                    DeliveryTimeMinutes = o.DeliveryTimeMinutes,
                     Note = o.Note,
                     Items = o.Orderproducts.Select(op => new OrderItemDTO
                     {
@@ -187,7 +187,7 @@ namespace EsfihariaAPI.Controllers
                     DiscountValue = dto.DiscountValue,
                     TotalValue = total,
                     Date = DateTime.UtcNow,
-                    DeliveryTime = dto.DeliveryTime,
+                    DeliveryTimeMinutes = dto.DeliveryTimeMinutes,
                     Note = dto.Note
                 };
 
@@ -218,7 +218,7 @@ namespace EsfihariaAPI.Controllers
                     order.DiscountValue,
                     order.TotalValue,
                     order.Date,
-                    order.DeliveryTime,
+                    order.DeliveryTimeMinutes,
                     order.Note
                 });
             }

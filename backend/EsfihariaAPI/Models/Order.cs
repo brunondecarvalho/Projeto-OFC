@@ -25,7 +25,7 @@ public partial class Order
 
     public DateTime Date { get; set; }
 
-    public decimal DeliveryTime { get; set; }
+    public int DeliveryTimeMinutes{ get; set; }
 
     public string? Note { get; set; }
 

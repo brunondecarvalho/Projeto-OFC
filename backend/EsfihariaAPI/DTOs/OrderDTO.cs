@@ -13,7 +13,7 @@
         public int? IdAddress { get; set; }
         public decimal DeliveryValue { get; set; }
         public decimal DiscountValue { get; set; }
-        public decimal DeliveryTime { get; set; }
+        public int DeliveryTimeMinutes { get; set; }
         public string? Note { get; set; }
         public List<CreateOrderItemDTO> Items { get; set; } = new();
     }
@@ -57,7 +57,7 @@
         public decimal DiscountValue { get; set; }
         public decimal TotalValue { get; set; }
         public DateTime Date { get; set; }
-        public decimal DeliveryTime { get; set; }
+        public int DeliveryTimeMinutes { get; set; }
         public string? Note { get; set; }
         public List<OrderItemDTO> Items { get; set; } = new();
     }
