@@ -1,6 +1,7 @@
 ﻿using EsfihariaAPI.Context;
 using EsfihariaAPI.DTOs;
 using EsfihariaAPI.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -18,6 +19,7 @@ namespace EsfihariaAPI.Controllers
         }
 
         // GET: api/store-settings
+        [AllowAnonymous]
         [HttpGet]
         public async Task<ActionResult<StoreSettingsDTO>> Get()
         {
@@ -41,6 +43,7 @@ namespace EsfihariaAPI.Controllers
         }
 
         // PUT: api/store-settings
+        [Authorize(Roles = "Admin")]
         [HttpPut]
         public async Task<ActionResult> Update(
             [FromBody] UpdateStoreSettingsDTO dto)
@@ -79,6 +82,7 @@ namespace EsfihariaAPI.Controllers
         }
 
         // GET: api/store-settings/is-open
+        [AllowAnonymous]
         [HttpGet("is-open")]
         public async Task<ActionResult> IsStoreOpen()
         {

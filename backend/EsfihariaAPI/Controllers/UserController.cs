@@ -1,6 +1,7 @@
 ﻿using EsfihariaAPI.Context;
 using EsfihariaAPI.DTOs;
 using EsfihariaAPI.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -21,6 +22,7 @@ namespace EsfihariaAPI.Controllers
         }
 
         // GET: api/User
+        [Authorize(Roles = "Admin")]
         [HttpGet]
         public async Task<ActionResult<IEnumerable<UserListDTO>>> GetAll()
         {
@@ -39,6 +41,7 @@ namespace EsfihariaAPI.Controllers
         }
 
         // GET: api/User/5
+        [Authorize(Roles = "Admin")]
         [HttpGet("{id}")]
         public async Task<ActionResult<UserListDTO>> GetById(int id)
         {
@@ -162,6 +165,7 @@ namespace EsfihariaAPI.Controllers
         }
 
         // PUT: api/User/5
+        [Authorize(Roles = "Admin,Customer")]
         [HttpPut("{id}")]
         public async Task<ActionResult> Update(int id, [FromBody] UpdateUserDTO updateDTO)
         {
@@ -186,6 +190,7 @@ namespace EsfihariaAPI.Controllers
         }
 
         // DELETE: api/User/5
+        [Authorize(Roles = "Admin")]
         [HttpDelete("{id}")]
         public async Task<ActionResult> Delete(int id)
         {

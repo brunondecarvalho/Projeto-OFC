@@ -1,6 +1,7 @@
 ﻿using EsfihariaAPI.Context;
 using EsfihariaAPI.DTOs;
 using EsfihariaAPI.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -18,6 +19,7 @@ namespace EsfihariaAPI.Controllers
         }
 
         // GET: api/Product
+        [AllowAnonymous]
         [HttpGet]
         public async Task<ActionResult<IEnumerable<ProductListDTO>>> GetAll()
         {
@@ -38,6 +40,7 @@ namespace EsfihariaAPI.Controllers
         }
 
         // GET: api/Product/5
+        [AllowAnonymous]
         [HttpGet("{id}")]
         public async Task<ActionResult<ProductListDTO>> GetById(int id)
         {
@@ -62,6 +65,7 @@ namespace EsfihariaAPI.Controllers
         }
 
         // POST: api/Product
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         public async Task<ActionResult> Create([FromBody] CreateProductDTO dto)
         {
@@ -82,6 +86,7 @@ namespace EsfihariaAPI.Controllers
         }
 
         // PUT: api/Product/5
+        [Authorize(Roles = "Admin")]
         [HttpPut("{id}")]
         public async Task<ActionResult> Update(int id, [FromBody] UpdateProductDTO dto)
         {
@@ -103,6 +108,7 @@ namespace EsfihariaAPI.Controllers
         }
 
         // DELETE: api/Product/5
+        [Authorize(Roles = "Admin")]
         [HttpDelete("{id}")]
         public async Task<ActionResult> Delete(int id)
         {

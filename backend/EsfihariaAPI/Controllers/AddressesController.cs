@@ -1,6 +1,7 @@
 ﻿using EsfihariaAPI.Context;
 using EsfihariaAPI.DTOs;
 using EsfihariaAPI.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -18,6 +19,7 @@ namespace EsfihariaAPI.Controllers
         }
 
         // GET: api/Addresses
+        [Authorize(Roles = "Admin,Customer")]
         [HttpGet]
         public async Task<ActionResult<IEnumerable<AddressListDTO>>> GetAll()
         {
@@ -40,6 +42,7 @@ namespace EsfihariaAPI.Controllers
         }
 
         // GET: api/Addresses/5
+        [Authorize(Roles = "Admin,Customer")]
         [HttpGet("{id}")]
         public async Task<ActionResult<AddressListDTO>> GetById(int id)
         {
@@ -66,6 +69,7 @@ namespace EsfihariaAPI.Controllers
         }
 
         // GET: api/Addresses/5
+        [Authorize(Roles = "Admin,Customer")]
         [HttpGet("user/{idUser}")]
         public async Task<ActionResult<AddressListDTO>> GetByIdUser(int idUser)
         {
@@ -92,6 +96,7 @@ namespace EsfihariaAPI.Controllers
         }
 
         // POST: api/Addresses
+        [Authorize(Roles = "Costumer")]
         [HttpPost]
         public async Task<ActionResult> Create([FromBody] CreateAddressDTO dto)
         {
@@ -118,6 +123,7 @@ namespace EsfihariaAPI.Controllers
         }
 
         // PUT: api/Addresses/5
+        [Authorize(Roles = "Admin,Customer")]
         [HttpPut("{id}")]
         public async Task<ActionResult> Update(int id, [FromBody] UpdateAddressDTO dto)
         {
@@ -139,6 +145,7 @@ namespace EsfihariaAPI.Controllers
         }
 
         // DELETE: api/Addresses/5
+        [Authorize(Roles = "Admin,Customer")]
         [HttpDelete("{id}")]
         public async Task<ActionResult> Delete(int id)
         {

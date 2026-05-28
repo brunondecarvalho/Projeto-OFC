@@ -1,6 +1,7 @@
 ﻿using EsfihariaAPI.Context;
 using EsfihariaAPI.DTOs;
 using EsfihariaAPI.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -18,6 +19,7 @@ namespace EsfihariaAPI.Controllers
         }
 
         // GET: api/Order
+        [Authorize(Roles = "Admin")]
         [HttpGet]
         public async Task<ActionResult<IEnumerable<OrderListDTO>>> GetAll()
         {
@@ -40,6 +42,7 @@ namespace EsfihariaAPI.Controllers
         }
 
         // GET: api/Order/5
+        [Authorize(Roles = "Admin,Customer")]
         [HttpGet("{id}")]
         public async Task<ActionResult<OrderDetailsDTO>> GetById(int id)
         {
@@ -79,6 +82,7 @@ namespace EsfihariaAPI.Controllers
         }
 
         // GET: api/Order/user/5
+        [Authorize(Roles = "Admin,Customer")]
         [HttpGet("user/{idUser}")]
         public async Task<ActionResult<IEnumerable<OrderListDTO>>> GetByUser(int idUser)
         {
@@ -125,6 +129,7 @@ namespace EsfihariaAPI.Controllers
         }
 
         // POST: api/Order
+        [Authorize(Roles = "Admin,Customer")]
         [HttpPost]
         public async Task<ActionResult> Create([FromBody] CreateOrderDTO dto)
         {
@@ -229,7 +234,8 @@ namespace EsfihariaAPI.Controllers
             }
         }
 
-        // PUT: api/Order/5/status
+        // PUT: api/Order/5/status]
+        [Authorize(Roles = "Admin")]
         [HttpPut("{id}/status")]
         public async Task<ActionResult> UpdateStatus(int id, [FromBody] UpdateOrderStatusDTO dto)
         {
@@ -245,6 +251,7 @@ namespace EsfihariaAPI.Controllers
         }
 
         // DELETE: api/Order/5
+        [Authorize(Roles = "Admin")]
         [HttpDelete("{id}")]
         public async Task<ActionResult> Cancel(int id)
         {
