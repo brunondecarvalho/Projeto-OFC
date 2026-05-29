@@ -7,12 +7,6 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// RENDER PORT
-
-var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
-
-builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
-
 // DATABASE
 
 var connectionString =
@@ -22,10 +16,7 @@ var serverVersion =
     ServerVersion.AutoDetect(connectionString);
 
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseMySql(
-        connectionString,
-        serverVersion
-    )
+    options.UseMySql(connectionString, serverVersion)
 );
 
 // CONTROLLERS
@@ -72,7 +63,7 @@ builder.Services
             IssuerSigningKey =
                 new SymmetricSecurityKey(
                     Encoding.UTF8.GetBytes(
-                        builder.Configuration["Jwt:SecretKey"]!
+                        builder.Configuration["Jwt:Key"]!
                     )
                 ),
 
@@ -86,41 +77,33 @@ builder.Services.AddAuthorization();
 
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("Frontend", policy =>
+    options.AddPolicy("AllowAll", policy =>
     {
         policy
-            .WithOrigins(
-                "https://SEU_FRONT.vercel.app",
-                "https://SEU_FRONT.azurestaticapps.net"
-            )
-            .AllowAnyHeader()
-            .AllowAnyMethod();
+            .AllowAnyOrigin()
+            .AllowAnyMethod()
+            .AllowAnyHeader();
     });
 });
 
 var app = builder.Build();
 
-// SWAGGER
+// MIDDLEWARES
 
-app.UseSwagger();
+app.UseCors("AllowAll");
 
-app.UseSwaggerUI();
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
 
-// HTTPS
+    app.UseSwaggerUI();
+}
 
 app.UseHttpsRedirection();
-
-// CORS
-
-app.UseCors("Frontend");
-
-// AUTH
 
 app.UseAuthentication();
 
 app.UseAuthorization();
-
-// ROUTES
 
 app.MapControllers();
 
