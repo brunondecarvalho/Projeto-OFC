@@ -13,23 +13,27 @@ namespace EsfihariaAPI.Controllers;
 public class AuthController : ControllerBase
 {
     private readonly AppDbContext _db;
-    private readonly IJwtService _jwt;
-    private readonly IPasswordHashService _hash;
+
+    private readonly IJwtService _jwtService;
+
+    private readonly IPasswordHashService _passwordHashService;
 
     public AuthController(
         AppDbContext db,
-        IJwtService jwt,
-        IPasswordHashService hash)
+        IJwtService jwtService,
+        IPasswordHashService passwordHashService)
     {
         _db = db;
-        _jwt = jwt;
-        _hash = hash;
+        _jwtService = jwtService;
+        _passwordHashService = passwordHashService;
     }
+
+    // LOGIN
 
     [AllowAnonymous]
     [HttpPost("login")]
     public async Task<IActionResult> Login(
-        LoginDTO dto)
+        [FromBody] LoginDTO dto)
     {
         var user = await _db.Users
             .FirstOrDefaultAsync(
@@ -37,19 +41,100 @@ public class AuthController : ControllerBase
             );
 
         if (user == null)
-            return Unauthorized();
+            return Unauthorized(
+                "Email ou senha inválidos."
+            );
 
-        var valid = _hash.Verify(
-            user,
-            user.Password,
-            dto.Password
-        );
+        var validPassword =
+            _passwordHashService.Verify(
+                user,
+                user.Password,
+                dto.Password
+            );
 
-        if (!valid)
-            return Unauthorized();
+        if (!validPassword)
+            return Unauthorized(
+                "Email ou senha inválidos."
+            );
 
-        var token = _jwt.GenerateToken(user);
+        var token =
+            _jwtService.GenerateToken(user);
 
-        return Ok(new { token });
+        return Ok(new
+        {
+            Token = token,
+            User = new
+            {
+                user.Id,
+                user.Name,
+                user.Email,
+                user.IdRole
+            }
+        });
+    }
+
+    // REGISTER
+
+    [AllowAnonymous]
+    [HttpPost("register")]
+    public async Task<IActionResult> Register(
+        [FromBody] SignUpDTO dto)
+    {
+        var emailExists = await _db.Users
+            .AnyAsync(x => x.Email == dto.Email);
+
+        if (emailExists)
+            return Conflict(
+                "Email já cadastrado."
+            );
+
+        var user = new User
+        {
+            IdRole = 1,
+            Name = dto.Name.Trim(),
+            Email = dto.Email.Trim().ToLower(),
+            Phone = dto.Phone.Trim()
+        };
+
+        user.Password =
+            _passwordHashService.Hash(
+                user,
+                dto.Password
+            );
+
+        _db.Users.Add(user);
+
+        await _db.SaveChangesAsync();
+
+        return Created(string.Empty, new
+        {
+            user.Id,
+            user.Name,
+            user.Email
+        });
+    }
+
+    // ME
+
+    [Authorize]
+    [HttpGet("me")]
+    public IActionResult Me()
+    {
+        return Ok(new
+        {
+            Id = User.Claims.FirstOrDefault(
+                x => x.Type.Contains("nameidentifier")
+            )?.Value,
+
+            Name = User.Identity?.Name,
+
+            Email = User.Claims.FirstOrDefault(
+                x => x.Type.Contains("emailaddress")
+            )?.Value,
+
+            Role = User.Claims.FirstOrDefault(
+                x => x.Type.Contains("role")
+            )?.Value
+        });
     }
 }

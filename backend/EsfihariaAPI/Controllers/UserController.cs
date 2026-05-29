@@ -2,207 +2,136 @@
 using EsfihariaAPI.DTOs;
 using EsfihariaAPI.Models;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
-namespace EsfihariaAPI.Controllers
+namespace EsfihariaAPI.Controllers;
+
+[ApiController]
+[Route("api/user")]
+public class UserController : ControllerBase
 {
-    [Route("api/[controller]")]
-    [ApiController]
-    public class UserController : ControllerBase
+    private readonly AppDbContext _db;
+
+    public UserController(AppDbContext db)
     {
-        private readonly AppDbContext _db;
-        private readonly PasswordHasher<User> _passwordHasher;
+        _db = db;
+    }
 
-        public UserController(AppDbContext db)
-        {
-            _db = db;
-            _passwordHasher = new PasswordHasher<User>();
-        }
-
-        // GET: api/User
-        [Authorize(Roles = "Admin")]
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<UserListDTO>>> GetAll()
-        {
-            var users = await _db.Users
-                .Select(u => new UserListDTO
-                {
-                    Id = u.Id,
-                    IdRole = u.IdRole,
-                    Name = u.Name,
-                    Email = u.Email,
-                    Phone = u.Phone
-                })
-                .ToListAsync();
-
-            return Ok(users);
-        }
-
-        // GET: api/User/5
-        [Authorize(Roles = "Admin")]
-        [HttpGet("{id}")]
-        public async Task<ActionResult<UserListDTO>> GetById(int id)
-        {
-            var user = await _db.Users
-                .Where(u => u.Id == id)
-                .Select(u => new UserListDTO
-                {
-                    Id = u.Id,
-                    IdRole = u.IdRole,
-                    Name = u.Name,
-                    Email = u.Email,
-                    Phone = u.Phone
-                })
-                .FirstOrDefaultAsync();
-
-            if (user == null)
-                return NotFound("Usuário não encontrado.");
-
-            return Ok(user);
-        }
-
-        // POST: api/User/Login
-        [HttpPost("Login")]
-        public async Task<ActionResult> Login([FromBody] LoginDTO loginDTO)
-        {
-            var user = await _db.Users.FirstOrDefaultAsync(u => u.Email == loginDTO.Email);
-
-            if (user == null)
-                return Unauthorized("Email ou senha inválidos.");
-
-            var result = _passwordHasher.VerifyHashedPassword(user, user.Password, loginDTO.Password);
-
-            if (result == PasswordVerificationResult.Failed)
-                return Unauthorized("Email ou senha inválidos.");
-
-            return Ok(new
+    [Authorize(Roles = "Admin")]
+    [HttpGet]
+    public async Task<IActionResult> GetAll()
+    {
+        var users = await _db.Users
+            .AsNoTracking()
+            .Select(x => new
             {
-                message = "Login realizado com sucesso.",
-                user = new
-                {
-                    user.Id,
-                    user.Name,
-                    user.Email,
-                    user.Phone,
-                    user.IdRole
-                }
-            });
-        }
+                x.Id,
+                x.Name,
+                x.Email,
+                x.Phone,
+                x.IdRole
+            })
+            .ToListAsync();
 
-        // POST: api/User
-        [HttpPost]
-        public async Task<ActionResult> Create([FromBody] SignUpDTO cadastroDTO)
+        return Ok(users);
+    }
+
+    [Authorize(Roles = "Admin")]
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetById(int id)
+    {
+        var user = await _db.Users
+            .AsNoTracking()
+            .FirstOrDefaultAsync(x => x.Id == id);
+
+        if (user == null)
+            return NotFound();
+
+        return Ok(new
         {
-            var emailExists = await _db.Users.AnyAsync(u => u.Email == cadastroDTO.Email);
+            user.Id,
+            user.Name,
+            user.Email,
+            user.Phone,
+            user.IdRole
+        });
+    }
 
-            if (emailExists)
-                return Conflict("Já existe um usuário com esse email.");
+    [Authorize]
+    [HttpGet("profile")]
+    public async Task<IActionResult> Profile()
+    {
+        var userId = int.Parse(
+            User.FindFirst(
+                ClaimTypes.NameIdentifier
+            )!.Value
+        );
 
-            // Validação extra para motoristas
-            if (cadastroDTO.IdRole == 3)
-            {
-                if (string.IsNullOrWhiteSpace(cadastroDTO.Cnh) ||
-                    string.IsNullOrWhiteSpace(cadastroDTO.LicensePlate))
-                {
-                    return BadRequest("Motoristas precisam informar CNH e Placa do veículo.");
-                }
-            }
+        var user = await _db.Users
+            .AsNoTracking()
+            .FirstOrDefaultAsync(
+                x => x.Id == userId
+            );
 
-            using var transaction = await _db.Database.BeginTransactionAsync();
+        if (user == null)
+            return NotFound();
 
-            try
-            {
-                var user = new User
-                {
-                    IdRole = cadastroDTO.IdRole,
-                    Name = cadastroDTO.Name,
-                    Email = cadastroDTO.Email,
-                    Phone = cadastroDTO.Phone
-                };
-
-                user.Password = _passwordHasher.HashPassword(user, cadastroDTO.Password);
-
-                _db.Users.Add(user);
-                await _db.SaveChangesAsync(); // Aqui o Id do usuário é gerado
-
-                // SE FOR MOTORISTA, CRIA O DRIVER
-                if (cadastroDTO.IdRole == 3)
-                {
-                    var driver = new Driver
-                    {
-                        IdUser = user.Id,
-                        IdStatus = 1, // Ativo por padrão
-                        Cnh = cadastroDTO.Cnh!,
-                        LicensePlate = cadastroDTO.LicensePlate!
-                    };
-
-                    _db.Drivers.Add(driver);
-                    await _db.SaveChangesAsync();
-                }
-
-                await transaction.CommitAsync();
-
-                return CreatedAtAction(
-                    nameof(GetById),
-                    new { id = user.Id },
-                    new
-                    {
-                        user.Id,
-                        user.Name,
-                        user.Email,
-                        user.Phone,
-                        user.IdRole
-                    }
-                );
-            }
-            catch
-            {
-                await transaction.RollbackAsync();
-                return StatusCode(500, "Erro ao criar usuário.");
-            }
-        }
-
-        // PUT: api/User/5
-        [Authorize(Roles = "Admin,Customer")]
-        [HttpPut("{id}")]
-        public async Task<ActionResult> Update(int id, [FromBody] UpdateUserDTO updateDTO)
+        return Ok(new
         {
-            var user = await _db.Users.FindAsync(id);
+            user.Id,
+            user.Name,
+            user.Email,
+            user.Phone,
+            user.IdRole
+        });
+    }
 
-            if (user == null)
-                return NotFound("Usuário não encontrado.");
+    [Authorize]
+    [HttpPut("profile")]
+    public async Task<IActionResult> UpdateProfile(
+        [FromBody] UpdateUserDTO dto)
+    {
+        var userId = int.Parse(
+            User.FindFirst(
+                ClaimTypes.NameIdentifier
+            )!.Value
+        );
 
-            var emailTaken = await _db.Users.AnyAsync(u => u.Email == updateDTO.Email && u.Id != id);
+        var user = await _db.Users
+            .FirstOrDefaultAsync(
+                x => x.Id == userId
+            );
 
-            if (emailTaken)
-                return Conflict("Já existe outro usuário com esse email.");
+        if (user == null)
+            return NotFound();
 
-            user.Name = updateDTO.Name;
-            user.Email = updateDTO.Email;
-            user.Phone = updateDTO.Phone;
-            user.IdRole = updateDTO.IdRole;
+        user.Name = dto.Name.Trim();
 
-            await _db.SaveChangesAsync();
+        user.Phone = dto.Phone.Trim();
 
-            return NoContent();
-        }
+        await _db.SaveChangesAsync();
 
-        // DELETE: api/User/5
-        [Authorize(Roles = "Admin")]
-        [HttpDelete("{id}")]
-        public async Task<ActionResult> Delete(int id)
-        {
-            var user = await _db.Users.FindAsync(id);
+        return NoContent();
+    }
 
-            if (user == null)
-                return NotFound("Usuário não encontrado.");
+    [Authorize(Roles = "Admin")]
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> Delete(int id)
+    {
+        var user = await _db.Users
+            .FirstOrDefaultAsync(
+                x => x.Id == id
+            );
 
-            _db.Users.Remove(user);
-            await _db.SaveChangesAsync();
+        if (user == null)
+            return NotFound();
 
-            return NoContent();
-        }
+        _db.Users.Remove(user);
+
+        await _db.SaveChangesAsync();
+
+        return NoContent();
     }
 }
