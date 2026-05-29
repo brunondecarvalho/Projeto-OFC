@@ -186,7 +186,7 @@ namespace EsfihariaAPI.Controllers
                     IdUser = dto.IdUser,
                     IdOrderCategory = dto.IdOrderCategory,
                     IdAddress = dto.IdAddress,
-                    IdStatus = 1, // Pendente, ajuste conforme sua tabela Status
+                    IdStatus = 3, // Pendente, ajuste conforme sua tabela Status
                     SubtotalValue = subtotal,
                     DeliveryValue = dto.DeliveryValue,
                     DiscountValue = dto.DiscountValue,

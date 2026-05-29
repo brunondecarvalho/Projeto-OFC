@@ -5,7 +5,7 @@ SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;
 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION';
 
 -- -----------------------------------------------------
--- Schema bd_esfiha
+-- Schema mydb
 -- -----------------------------------------------------
 -- -----------------------------------------------------
 -- Schema esfiha_bd
@@ -36,17 +36,17 @@ COLLATE = utf8mb4_0900_ai_ci;
 CREATE TABLE IF NOT EXISTS `esfiha_bd`.`user` (
   `Id` INT NOT NULL AUTO_INCREMENT,
   `IdRole` INT NOT NULL,
-  `Name` VARCHAR(90) NOT NULL,
+  `Name` VARCHAR(45) NOT NULL,
   `Email` VARCHAR(45) NOT NULL,
   `Password` VARCHAR(255) NOT NULL,
-  `Phone` VARCHAR(45) NOT NULL,
+  `Phone` VARCHAR(20) NOT NULL,
   PRIMARY KEY (`Id`),
   INDEX `IdRole_idx` (`IdRole` ASC) VISIBLE,
   CONSTRAINT `IdRole`
     FOREIGN KEY (`IdRole`)
     REFERENCES `esfiha_bd`.`role` (`Id`))
 ENGINE = InnoDB
-AUTO_INCREMENT = 5
+AUTO_INCREMENT = 12
 DEFAULT CHARACTER SET = utf8mb4
 COLLATE = utf8mb4_0900_ai_ci;
 
@@ -69,7 +69,7 @@ CREATE TABLE IF NOT EXISTS `esfiha_bd`.`addresses` (
     FOREIGN KEY (`IdUser`)
     REFERENCES `esfiha_bd`.`user` (`Id`))
 ENGINE = InnoDB
-AUTO_INCREMENT = 3
+AUTO_INCREMENT = 7
 DEFAULT CHARACTER SET = utf8mb4
 COLLATE = utf8mb4_0900_ai_ci;
 
@@ -82,7 +82,7 @@ CREATE TABLE IF NOT EXISTS `esfiha_bd`.`status` (
   `Name` VARCHAR(45) NOT NULL,
   PRIMARY KEY (`Id`))
 ENGINE = InnoDB
-AUTO_INCREMENT = 4
+AUTO_INCREMENT = 8
 DEFAULT CHARACTER SET = utf8mb4
 COLLATE = utf8mb4_0900_ai_ci;
 
@@ -93,7 +93,7 @@ COLLATE = utf8mb4_0900_ai_ci;
 CREATE TABLE IF NOT EXISTS `esfiha_bd`.`combos` (
   `Id` INT NOT NULL AUTO_INCREMENT,
   `IdStatus` INT NOT NULL,
-  `Name` VARCHAR(100) NOT NULL,
+  `Name` VARCHAR(35) NOT NULL,
   `Description` TEXT NOT NULL,
   `Price` DECIMAL(10,2) NOT NULL,
   PRIMARY KEY (`Id`),
@@ -127,10 +127,10 @@ CREATE TABLE IF NOT EXISTS `esfiha_bd`.`product` (
   `Id` INT NOT NULL AUTO_INCREMENT,
   `IdCategory` INT NOT NULL,
   `IdStatus` INT NOT NULL,
-  `Name` VARCHAR(45) NOT NULL,
-  `Description` VARCHAR(100) NULL DEFAULT NULL,
-  `Price` DECIMAL(10,0) NOT NULL,
-  `Image` VARCHAR(45) NULL DEFAULT NULL,
+  `Name` VARCHAR(35) NOT NULL,
+  `Description` TEXT NULL DEFAULT NULL,
+  `Price` DECIMAL(10,2) NOT NULL,
+  `Image` VARCHAR(255) NULL DEFAULT NULL,
   PRIMARY KEY (`Id`),
   INDEX `IdCategory_idx` (`IdCategory` ASC) VISIBLE,
   INDEX `IdStatus_idx` (`IdStatus` ASC) VISIBLE,
@@ -141,7 +141,7 @@ CREATE TABLE IF NOT EXISTS `esfiha_bd`.`product` (
     FOREIGN KEY (`IdStatus`)
     REFERENCES `esfiha_bd`.`status` (`Id`))
 ENGINE = InnoDB
-AUTO_INCREMENT = 3
+AUTO_INCREMENT = 7
 DEFAULT CHARACTER SET = utf8mb4
 COLLATE = utf8mb4_0900_ai_ci;
 
@@ -210,8 +210,8 @@ CREATE TABLE IF NOT EXISTS `esfiha_bd`.`driver` (
   `Id` INT NOT NULL AUTO_INCREMENT,
   `IdUser` INT NOT NULL,
   `IdStatus` INT NOT NULL,
-  `CNH` VARCHAR(90) NOT NULL,
-  `LicensePlate` VARCHAR(45) NOT NULL,
+  `CNH` VARCHAR(15) NOT NULL,
+  `LicensePlate` VARCHAR(9) NOT NULL,
   PRIMARY KEY (`Id`),
   INDEX `IdxDriverIdStatus` (`IdStatus` ASC) VISIBLE,
   INDEX `IdxDriverIdUser` (`IdUser` ASC) VISIBLE,
@@ -254,8 +254,8 @@ CREATE TABLE IF NOT EXISTS `esfiha_bd`.`order` (
   `DiscountValue` DECIMAL(10,2) NOT NULL,
   `TotalValue` DECIMAL(10,2) NOT NULL,
   `Date` DATETIME NOT NULL,
-  `DeliveryTime` DECIMAL(5,2) NOT NULL,
-  `Note` VARCHAR(100) NULL DEFAULT NULL,
+  `DeliveryTimeMinutes` INT NOT NULL,
+  `Note` TEXT NULL DEFAULT NULL,
   PRIMARY KEY (`Id`),
   INDEX `IdxIdOrderCategory` (`IdOrderCategory` ASC) VISIBLE,
   INDEX `IdxIdAddress` (`IdAddress` ASC) VISIBLE,
@@ -274,7 +274,7 @@ CREATE TABLE IF NOT EXISTS `esfiha_bd`.`order` (
     FOREIGN KEY (`IdUser`)
     REFERENCES `esfiha_bd`.`user` (`Id`))
 ENGINE = InnoDB
-AUTO_INCREMENT = 2
+AUTO_INCREMENT = 16
 DEFAULT CHARACTER SET = utf8mb4
 COLLATE = utf8mb4_0900_ai_ci;
 
@@ -297,7 +297,26 @@ CREATE TABLE IF NOT EXISTS `esfiha_bd`.`orderproduct` (
     FOREIGN KEY (`IdProduct`)
     REFERENCES `esfiha_bd`.`product` (`Id`))
 ENGINE = InnoDB
-AUTO_INCREMENT = 3
+AUTO_INCREMENT = 21
+DEFAULT CHARACTER SET = utf8mb4
+COLLATE = utf8mb4_0900_ai_ci;
+
+
+-- -----------------------------------------------------
+-- Table `esfiha_bd`.`storesettings`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `esfiha_bd`.`storesettings` (
+  `Id` INT NOT NULL AUTO_INCREMENT,
+  `IsOpen` INT NOT NULL,
+  `EstimatedDeliveryTimeMinutes` INT NOT NULL,
+  `PixKey` VARCHAR(77) NOT NULL,
+  `DeliveryFee` DECIMAL(10,2) NULL DEFAULT NULL,
+  `MinimumOrderValue` DECIMAL(10,2) NULL DEFAULT NULL,
+  `Phone` VARCHAR(15) NULL DEFAULT NULL,
+  `UpdateAt` DATETIME NOT NULL,
+  PRIMARY KEY (`Id`))
+ENGINE = InnoDB
+AUTO_INCREMENT = 2
 DEFAULT CHARACTER SET = utf8mb4
 COLLATE = utf8mb4_0900_ai_ci;
 
@@ -309,28 +328,31 @@ CREATE TABLE IF NOT EXISTS `esfiha_bd`.`transactions` (
   `Id` INT NOT NULL AUTO_INCREMENT,
   `IdUser` INT NOT NULL,
   `IdOrder` INT NOT NULL,
-  `IdPaymentMethod` INT NOT NULL,
   `IdStatus` INT NOT NULL,
-  `TotalValue` DECIMAL(10,0) NOT NULL,
-  `IdGatewayTransaction` INT NOT NULL,
-  `Payload` INT NOT NULL,
-  `CreationDate` DATETIME NOT NULL,
+  `PreferenceId` VARCHAR(150) NULL DEFAULT NULL,
+  `GatewayTransactionId` VARCHAR(100) NULL DEFAULT NULL,
+  `PaymentMethod` VARCHAR(50) NULL DEFAULT NULL,
+  `Installments` INT NULL DEFAULT '1',
+  `TotalValue` DECIMAL(10,2) NULL DEFAULT NULL,
+  `PayloadResponse` VARCHAR(40) NULL DEFAULT NULL,
+  `CreationDate` DATETIME NULL DEFAULT NULL,
   `UpdateDate` DATETIME NULL DEFAULT NULL,
-  `PayloadResponse` JSON NULL DEFAULT NULL,
   PRIMARY KEY (`Id`),
-  INDEX `IdUser_idx` (`IdUser` ASC) VISIBLE,
-  INDEX `IdOrder_idx` (`IdOrder` ASC) VISIBLE,
-  INDEX `IdStatus_idx` (`IdStatus` ASC) VISIBLE,
-  CONSTRAINT `FkIdOrder`
+  INDEX `IdxTransactionsIdUser` (`IdUser` ASC) VISIBLE,
+  INDEX `IdxTransactionsIdOrder` (`IdOrder` ASC) VISIBLE,
+  INDEX `IdxTransactionsIdStatus` (`IdStatus` ASC) VISIBLE,
+  INDEX `IdxTransactionsPreferenceId` (`PreferenceId` ASC) VISIBLE,
+  CONSTRAINT `FkTransactionsOrder`
     FOREIGN KEY (`IdOrder`)
     REFERENCES `esfiha_bd`.`order` (`Id`),
-  CONSTRAINT `FkIdStatus`
+  CONSTRAINT `FkTransactionsStatus`
     FOREIGN KEY (`IdStatus`)
     REFERENCES `esfiha_bd`.`status` (`Id`),
-  CONSTRAINT `FkIdUser`
+  CONSTRAINT `FkTransactionsUser`
     FOREIGN KEY (`IdUser`)
     REFERENCES `esfiha_bd`.`user` (`Id`))
 ENGINE = InnoDB
+AUTO_INCREMENT = 3
 DEFAULT CHARACTER SET = utf8mb4
 COLLATE = utf8mb4_0900_ai_ci;
 
